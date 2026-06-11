@@ -25,6 +25,7 @@ dist/
 # Build / deploy
 .cloud/
 *.log
+agent/scripts/dql_out.txt
 .DS_Store
 Thumbs.db
 

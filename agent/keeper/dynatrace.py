@@ -67,16 +67,28 @@ async def call_tool(name: str, arguments: dict, timeout: float = 60.0) -> str:
             return _extract_text(result)
 
 
-def _first_number(text: str, *keys: str) -> float | None:
-    """Pull the first numeric value for any of the given keys out of tool text."""
-    for key in keys:
-        match = re.search(rf'"{re.escape(key)}"\s*:\s*([0-9.eE+-]+)', text)
-        if match:
-            try:
-                return float(match.group(1))
-            except ValueError:
-                continue
-    return None
+def _extract_records(text: str) -> list[dict]:
+    """The Dynatrace MCP wraps DQL results in a JSON block. Pull the records out."""
+    fenced = re.search(r"```json\s*(\[.*?\])\s*```", text, re.DOTALL)
+    fragment = fenced.group(1) if fenced else None
+    if fragment is None:
+        start, end = text.find("["), text.rfind("]")
+        if start != -1 and end != -1 and end > start:
+            fragment = text[start : end + 1]
+    if not fragment:
+        return []
+    try:
+        data = json.loads(fragment)
+        return data if isinstance(data, list) else []
+    except Exception:
+        return []
+
+
+def _num(value) -> float | None:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
 
 
 DETECTION_DQL = (
@@ -99,22 +111,22 @@ async def query_health(service: str) -> dict | None:
     try:
         text = await call_tool("execute_dql", {"dqlStatement": dql})
     except Exception:
-        try:
-            # Some server versions name the argument differently.
-            text = await call_tool("execute_dql", {"query": dql})
-        except Exception:
-            return None
+        return None
 
-    p95 = _first_number(text, "p95")
-    error_rate = _first_number(text, "error_rate")
-    total = _first_number(text, "total")
+    records = _extract_records(text)
+    if not records:
+        return None
+    record = records[0]
+    p95 = _num(record.get("p95"))
+    error_rate = _num(record.get("error_rate"))
+    total = _num(record.get("total"))
     if p95 is None and error_rate is None:
         return None
     return {
         "p95_ms": p95 or 0.0,
         "error_rate": error_rate or 0.0,
         "total": int(total or 0),
-        "raw": text[:2000],
+        "raw": text[:1500],
     }
 
 
