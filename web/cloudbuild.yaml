@@ -1,0 +1,17 @@
+# Builds the Mission Control image with the Keeper backend URL baked in.
+# The frontend reads VITE_KEEPER_URL at build time, so it must be passed here.
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --build-arg
+      - VITE_KEEPER_URL=${_KEEPER_URL}
+      - --build-arg
+      - VITE_MOCK=0
+      - -t
+      - ${_IMAGE}
+      - .
+images:
+  - ${_IMAGE}
+options:
+  logging: CLOUD_LOGGING_ONLY

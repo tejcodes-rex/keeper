@@ -75,13 +75,11 @@ echo "==> [3/3] Building and deploying Mission Control (frontend wired to Keeper
 REPO="keeper"
 gcloud artifacts repositories create "$REPO" \
   --repository-format=docker --location "$REGION" --quiet 2>/dev/null || true
-gcloud auth configure-docker "$REGION-docker.pkg.dev" --quiet
 IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPO/mission-control:latest"
-docker build \
-  --build-arg VITE_KEEPER_URL="$AGENT_URL" \
-  --build-arg VITE_MOCK=0 \
-  -t "$IMAGE" "$ROOT/web"
-docker push "$IMAGE"
+gcloud builds submit "$ROOT/web" \
+  --config "$ROOT/web/cloudbuild.yaml" \
+  --substitutions "_KEEPER_URL=$AGENT_URL,_IMAGE=$IMAGE" \
+  --quiet
 gcloud run deploy keeper-mission-control \
   --image "$IMAGE" \
   --region "$REGION" \
