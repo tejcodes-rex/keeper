@@ -21,6 +21,8 @@ ROOT="$(dirname "$SCRIPT_DIR")"
 
 PROJECT_ID="${PROJECT_ID:?set PROJECT_ID}"
 REGION="${REGION:-us-central1}"
+# Vertex AI location for Gemini. The global endpoint serves the 3.x preview models.
+VERTEX_LOCATION="${VERTEX_LOCATION:-global}"
 DT_ENVIRONMENT="${DT_ENVIRONMENT:?set DT_ENVIRONMENT}"
 DT_PLATFORM_TOKEN="${DT_PLATFORM_TOKEN:?set DT_PLATFORM_TOKEN}"
 DT_INGEST_BASE="${DT_INGEST_BASE:?set DT_INGEST_BASE}"
@@ -38,6 +40,9 @@ gcloud services enable \
   cloudbuild.googleapis.com \
   artifactregistry.googleapis.com
 
+# Give Cloud Build extra headroom for the agent image (Node + AI libraries).
+gcloud config set builds/timeout 1200 >/dev/null 2>&1 || true
+
 echo "==> [1/3] Deploying the World Cup fan gateway (protected service)"
 gcloud run deploy "$SERVICE" \
   --source "$ROOT/victim" \
@@ -54,7 +59,7 @@ gcloud run deploy keeper-agent \
   --region "$REGION" \
   --allow-unauthenticated \
   --memory 2Gi --cpu 2 --timeout 900 \
-  --set-env-vars "GOOGLE_CLOUD_PROJECT=$PROJECT_ID,GOOGLE_CLOUD_LOCATION=$REGION,GOOGLE_GENAI_USE_VERTEXAI=TRUE,KEEPER_MODEL=$MODEL,DT_ENVIRONMENT=$DT_ENVIRONMENT,DT_PLATFORM_TOKEN=$DT_PLATFORM_TOKEN,VICTIM_BASE_URL=$VICTIM_URL,KEEPER_TARGET_SERVICE=$SERVICE,DT_SLACK_CONNECTION_ID=$DT_SLACK_CONNECTION_ID,KEEPER_PACE_SECONDS=1.6" \
+  --set-env-vars "^|^GOOGLE_CLOUD_PROJECT=$PROJECT_ID|GOOGLE_CLOUD_LOCATION=$VERTEX_LOCATION|GOOGLE_GENAI_USE_VERTEXAI=TRUE|KEEPER_MODEL=$MODEL|DT_ENVIRONMENT=$DT_ENVIRONMENT|DT_PLATFORM_TOKEN=$DT_PLATFORM_TOKEN|VICTIM_BASE_URL=$VICTIM_URL|KEEPER_TARGET_SERVICE=$SERVICE|DT_SLACK_CONNECTION_ID=$DT_SLACK_CONNECTION_ID|KEEPER_PACE_SECONDS=1.6" \
   --quiet
 AGENT_URL="$(gcloud run services describe keeper-agent --region "$REGION" --format='value(status.url)')"
 echo "    keeper: $AGENT_URL"
