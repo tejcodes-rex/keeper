@@ -10,7 +10,7 @@ the postmortem. The reasoning runs on Gemini 3.1 Pro through the Google Agent
 Development Kit. The eyes and the hands are Dynatrace, through its Model Context
 Protocol server.
 
-- **Live demo:** <ADD_HOSTED_URL>
+- **Live demo:** https://keeper-mission-control-plsrofw5mq-uc.a.run.app
 - **Demo video:** <ADD_VIDEO_URL>
 - **Track:** Dynatrace
 
