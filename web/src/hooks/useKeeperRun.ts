@@ -241,7 +241,7 @@ export function useKeeperRun() {
       await fetch(`${KEEPER_URL}/api/run`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: "{}",
+        body: JSON.stringify({ inject: true }),
       });
     } catch {
       // Surface as a log row but still attempt to subscribe.
