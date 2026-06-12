@@ -11,7 +11,7 @@ Development Kit. The eyes and the hands are Dynatrace, through its Model Context
 Protocol server.
 
 - **Live demo:** https://keeper-mission-control-plsrofw5mq-uc.a.run.app
-- **Demo video:** <ADD_VIDEO_URL>
+- **Demo video:** https://youtu.be/lpequrYL8hs
 - **Track:** Dynatrace
 
 ---

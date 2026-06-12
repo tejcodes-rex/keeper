@@ -50,4 +50,4 @@ gemini, google-agent-development-kit, vertex-ai, google-cloud, cloud-run, dynatr
 ## Links
 - Live demo: <ADD_HOSTED_URL>
 - Source code: <ADD_GITHUB_URL>
-- Demo video: <ADD_VIDEO_URL>
+- Demo video: https://youtu.be/lpequrYL8hs
